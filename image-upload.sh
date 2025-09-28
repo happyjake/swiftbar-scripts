@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# <swiftbar.var>string(VAR_HOST="mini"): SSH Host for upload</swiftbar.var>
+# <swiftbar.var>string(VAR_PATH="~/Downloads/"): Remote path for uploaded files</swiftbar.var>
+
 # Upload action
 if [[ "$1" == "upload" ]]; then
     FILENAME="img_$(date +%Y%m%d_%H%M%S)_$RANDOM.png"
@@ -38,8 +41,8 @@ if [[ "$1" == "upload" ]]; then
     fi
 
     # Upload and copy path
-    if scp "$UPLOAD_FILE" "mini:~/Downloads/$FILENAME" &>/dev/null; then
-        echo -n "~/Downloads/$FILENAME" | pbcopy
+    if scp "$UPLOAD_FILE" "${VAR_HOST}:${VAR_PATH}$FILENAME" &>/dev/null; then
+        echo -n "${VAR_PATH}$FILENAME" | pbcopy
 
         # Show size reduction info
         FINAL_SIZE=$(stat -f%z "$UPLOAD_FILE" 2>/dev/null || echo 0)
@@ -59,4 +62,4 @@ fi
 # Menu display
 echo "📤"
 echo "---"
-echo "Upload to mini | bash='$0' param1=upload terminal=false refresh=true"
+echo "Upload to ${VAR_HOST} | bash='$0' param1=upload terminal=false refresh=true"
