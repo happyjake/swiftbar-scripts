@@ -1,7 +1,14 @@
 #!/bin/bash
 
-# <swiftbar.var>string(VAR_HOST="mini"): SSH Host for upload</swiftbar.var>
-# <swiftbar.var>string(VAR_PATH="~/Downloads/"): Remote path for uploaded files</swiftbar.var>
+# <xbar.var>string(VAR_HOST="mini"): SSH Host for upload</xbar.var>
+# <xbar.var>string(VAR_PATH="~/Downloads/"): Remote path for uploaded files</xbar.var>
+
+# Set defaults if variables are not set by xbar
+VAR_HOST="${VAR_HOST:-mini}"
+VAR_PATH="${VAR_PATH:-~/Downloads/}"
+
+# Ensure path ends with /
+[[ "${VAR_PATH}" != */ ]] && VAR_PATH="${VAR_PATH}/"
 
 # Upload action
 if [[ "$1" == "upload" ]]; then
