@@ -166,7 +166,23 @@ fi
 # Manual update
 if [[ "$1" == "manual_update" ]]; then
     osascript -e 'display notification "Starting manual update..." with title "Homebrew"'
-    "$0" run_update &
+    # Get the absolute path of this script
+    SCRIPT_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
+    # Create a temporary script to run the update
+    TEMP_SCRIPT="/tmp/homebrew_update_$$.sh"
+    cat > "$TEMP_SCRIPT" << EOF
+#!/bin/bash
+'$SCRIPT_FULL_PATH' run_update
+echo ""
+echo "Press any key to close this window..."
+read -n 1
+exit
+EOF
+    chmod +x "$TEMP_SCRIPT"
+
+    # Open the script in Terminal
+    open -a Terminal "$TEMP_SCRIPT"
     exit
 fi
 
