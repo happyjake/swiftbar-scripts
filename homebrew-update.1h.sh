@@ -130,8 +130,21 @@ if [[ "$1" == "toggle_auto" ]]; then
   exit
 fi
 
+# Check if Homebrew is currently running
+is_brew_running() {
+  # Check for any active brew processes
+  pgrep -f "^$BREW_PATH" >/dev/null 2>&1
+}
+
 # Run the actual update
 if [[ "$1" == "run_update" ]]; then
+  # Guard: Check if Homebrew is already running
+  if is_brew_running; then
+    echo "Homebrew process already running. Skipping update to avoid conflicts."
+    osascript -e 'display notification "Another brew process is running" with title "Homebrew Update Skipped"'
+    exit 0
+  fi
+
   # Guard: Check if update is needed (>7 days since last update)
   LAST_UPDATE=$(get_last_update)
   NOW=$(date +%s)
