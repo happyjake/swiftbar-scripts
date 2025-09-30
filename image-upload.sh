@@ -98,9 +98,6 @@ fi
 
 # Process screenshot from LaunchAgent
 if [[ "$1" == "process_screenshot" ]]; then
-    # Wait a moment for file to be fully written
-    sleep 0.5
-
     # Find the newest screenshot file
     NEWEST=$(ls -t "$UPLOAD_DIR"/*.{png,jpg,jpeg} 2>/dev/null | head -1)
 
@@ -108,12 +105,32 @@ if [[ "$1" == "process_screenshot" ]]; then
         exit
     fi
 
-    # Check if file is still being written (size changing)
-    SIZE1=$(stat -f%z "$NEWEST" 2>/dev/null || echo 0)
-    sleep 0.2
-    SIZE2=$(stat -f%z "$NEWEST" 2>/dev/null || echo 0)
+    # Wait for file to be fully written using efficient polling with exponential backoff
+    MAX_ATTEMPTS=10
+    ATTEMPT=0
+    SLEEP_INTERVAL=0.05  # Start with 50ms
 
-    if [[ "$SIZE1" != "$SIZE2" ]]; then
+    while [[ $ATTEMPT -lt $MAX_ATTEMPTS ]]; do
+        # Try to open file exclusively - if it fails, file is still being written
+        if lsof "$NEWEST" >/dev/null 2>&1; then
+            sleep $SLEEP_INTERVAL
+            SLEEP_INTERVAL=$(echo "$SLEEP_INTERVAL * 1.5" | bc)
+            ATTEMPT=$((ATTEMPT + 1))
+        else
+            # Double-check with size stability over a short interval
+            SIZE1=$(stat -f%z "$NEWEST" 2>/dev/null || echo 0)
+            sleep 0.05
+            SIZE2=$(stat -f%z "$NEWEST" 2>/dev/null || echo 0)
+
+            if [[ "$SIZE1" == "$SIZE2" && "$SIZE1" -gt 0 ]]; then
+                break
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+        fi
+    done
+
+    # If we maxed out attempts, file might still be writing - abort
+    if [[ $ATTEMPT -ge $MAX_ATTEMPTS ]]; then
         exit
     fi
 
