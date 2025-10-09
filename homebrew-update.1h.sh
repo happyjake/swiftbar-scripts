@@ -147,12 +147,15 @@ if [[ "$1" == "run_update" ]]; then
 
   # Guard: Check if update is needed (>7 days since last update)
   LAST_UPDATE=$(get_last_update)
-  NOW=$(date +%s)
-  DAYS_SINCE_UPDATE=$(((NOW - LAST_UPDATE) / 86400))
 
-  if [[ $LAST_UPDATE -ne 0 ]] && [[ $DAYS_SINCE_UPDATE -lt 7 ]]; then
-    echo "Update not needed. Last update was $DAYS_SINCE_UPDATE days ago."
-    exit 0
+  if [[ $LAST_UPDATE -ne 0 ]]; then
+    NOW=$(date +%s)
+    DAYS_SINCE_UPDATE=$(((NOW - LAST_UPDATE) / 86400))
+
+    if [[ $DAYS_SINCE_UPDATE -lt 7 ]]; then
+      echo "Update not needed. Last update was $DAYS_SINCE_UPDATE days ago."
+      exit 0
+    fi
   fi
 
   echo "=== Homebrew Update Started: $(date) ==="
@@ -173,6 +176,18 @@ if [[ "$1" == "run_update" ]]; then
   echo "Cleaning up..."
   $BREW_PATH cleanup -s
   $BREW_PATH autoremove
+
+  # Update npm global packages
+  if command -v npm &>/dev/null; then
+    echo "Updating npm global packages..."
+    npm update -g
+  fi
+
+  # Update Mac App Store apps
+  if command -v mas &>/dev/null; then
+    echo "Updating App Store apps..."
+    mas upgrade
+  fi
 
   # Save timestamp
   defaults write "$LAST_UPDATE_KEY" timestamp "$(date +%s)"

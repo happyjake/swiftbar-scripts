@@ -86,6 +86,38 @@ disable_auto_upload() {
     osascript -e "display notification \"Auto-upload disabled. Screenshots will save to: ${original/#$HOME/~}\" with title \"Screenshot Auto-Upload\""
 }
 
+# Show help/usage information
+if [[ "$1" == "show_help" ]]; then
+    osascript <<'EOF'
+display dialog "Screenshot Auto-Upload - How to Use
+
+TWO MODES OF OPERATION:
+
+1️⃣ MANUAL MODE (Upload from Clipboard)
+   • Copy an image to your clipboard
+   • Click '📸 Upload Clipboard' in the menu
+   • The image will be uploaded and path copied to clipboard
+
+2️⃣ AUTO MODE (Automatic Screenshot Upload)
+   • Click 'Auto: OFF' to enable
+   • Take screenshots (Cmd+Shift+3/4/5 as usual)
+   • Screenshots are automatically uploaded
+   • Remote path is copied to clipboard
+   • Original is deleted after upload
+
+FEATURES:
+   • Auto-converts PNG to JPEG when smaller
+   • Uploads to: " & (system attribute "VAR_HOST") & ":" & (system attribute "VAR_PATH") & "
+   • Shows file size reduction notifications
+   • Configure host/path in SwiftBar plugin settings
+
+STATUS INDICATOR:
+   📤 = Auto mode OFF
+   📤✅ = Auto mode ON" buttons {"OK"} default button 1 with title "Screenshot Auto-Upload Help"
+EOF
+    exit
+fi
+
 # Toggle auto-upload
 if [[ "$1" == "toggle_auto" ]]; then
     if is_auto_enabled; then
@@ -252,3 +284,5 @@ else
     echo "❌ Auto: OFF | bash='$SCRIPT_PATH' param1=toggle_auto terminal=false refresh=true"
 fi
 echo "📸 Upload Clipboard | bash='$SCRIPT_PATH' param1=upload terminal=false refresh=true"
+echo "---"
+echo "ℹ️ How to Use | bash='$SCRIPT_PATH' param1=show_help terminal=false"
