@@ -180,7 +180,13 @@ if [[ "$1" == "run_update" ]]; then
   # Update npm global packages
   if command -v npm &>/dev/null; then
     echo "Updating npm global packages..."
-    npm update -g
+    # Fleet-owned agent packages must never be replaced by this updater.
+    # Invoke the guard explicitly: menu reconciliation can recreate launchd's PATH.
+    if [[ -e "$HOME/.config/fleet-maintenance/npm-guard.json" ]]; then
+      "$HOME/.local/share/fleet-maintenance/guards/npm" update -g
+    else
+      npm update -g
+    fi
   fi
 
   # Update Mac App Store apps
