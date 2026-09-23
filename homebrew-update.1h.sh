@@ -183,7 +183,11 @@ if [[ "$1" == "run_update" ]]; then
     # Fleet-owned agent packages must never be replaced by this updater.
     # Invoke the guard explicitly: menu reconciliation can recreate launchd's PATH.
     if [[ -e "$HOME/.config/fleet-maintenance/npm-guard.json" ]]; then
-      "$HOME/.local/share/fleet-maintenance/guards/npm" update -g
+      "$HOME/.local/share/fleet-maintenance/guards/npm" update -g || {
+        guard_status=$?
+        echo "Fleet npm guard failed; weekly update remains due." >&2
+        exit "$guard_status"
+      }
     else
       npm update -g
     fi
@@ -276,4 +280,3 @@ fi
 echo "🔄 Update Now | bash='$SCRIPT_PATH' param1=manual_update terminal=false refresh=true"
 echo "📋 Log | bash='$SCRIPT_PATH' param1=open_log terminal=false"
 echo "  ⌥ Show in Finder | bash='$SCRIPT_PATH' param1=show_log terminal=false alternate=true"
-
