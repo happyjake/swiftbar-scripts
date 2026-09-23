@@ -100,7 +100,10 @@ TWO MODES OF OPERATION:
 
 2️⃣ AUTO MODE (Automatic Screenshot Upload)
    • Click 'Auto: OFF' to enable
-   • Take screenshots (Cmd+Shift+3/4/5 as usual)
+   • Take screenshots with macOS shortcuts:
+     - Cmd+Shift+3: Full screen capture
+     - Cmd+Shift+4: Select region (RECOMMENDED)
+     - Cmd+Shift+5: Screenshot toolbar with options (RECOMMENDED)
    • Screenshots are automatically uploaded
    • Remote path is copied to clipboard
    • Original is deleted after upload
@@ -110,6 +113,15 @@ FEATURES:
    • Uploads to: " & (system attribute "VAR_HOST") & ":" & (system attribute "VAR_PATH") & "
    • Shows file size reduction notifications
    • Configure host/path in SwiftBar plugin settings
+
+HOW IT WORKS (UNDER THE HOOD):
+   1. Changes macOS screenshot save location to monitored folder
+   2. Creates LaunchAgent to watch for new files
+   3. When screenshot appears, waits for file completion
+   4. Optimizes PNG→JPEG if it reduces size
+   5. Uploads via SCP, copies remote path to clipboard
+   6. Deletes local file after successful upload
+   7. Restores original screenshot location when disabled
 
 STATUS INDICATOR:
    📤 = Auto mode OFF
