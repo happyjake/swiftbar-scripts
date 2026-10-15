@@ -96,8 +96,6 @@ enable_auto_update() {
         <key>Minute</key>
         <integer>0</integer>
     </dict>
-    <key>StartOnMount</key>
-    <true/>
     <key>StandardOutPath</key>
     <string>$LOG_FILE</string>
     <key>StandardErrorPath</key>
@@ -152,7 +150,9 @@ if [[ "$1" == "run_update" ]]; then
     NOW=$(date +%s)
     DAYS_SINCE_UPDATE=$(((NOW - LAST_UPDATE) / 86400))
 
-    if [[ $DAYS_SINCE_UPDATE -lt 7 ]]; then
+    # 6, not 7: a Sunday 10:00 run stamps its finish a few minutes later, so
+    # the next Sunday is just under 7 days on and a 7-day gate skips it.
+    if [[ $DAYS_SINCE_UPDATE -lt 6 ]]; then
       echo "Update not needed. Last update was $DAYS_SINCE_UPDATE days ago."
       exit 0
     fi
@@ -170,7 +170,10 @@ if [[ "$1" == "run_update" ]]; then
 
   # Upgrade casks
   echo "Upgrading casks..."
-  $BREW_PATH upgrade --cask
+  # Casks that update themselves stay out (OrbStack's upgrade quits the app and
+  # stops every container; 2026-10-16 it took the mini's services down for 2 h).
+  # Upgrade those by hand. ~/.homebrew/brew.env sets the same for manual brew.
+  HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1 $BREW_PATH upgrade --cask
 
   # Cleanup old versions
   echo "Cleaning up..."
